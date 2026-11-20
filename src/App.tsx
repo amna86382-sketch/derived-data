@@ -18,8 +18,12 @@ function App() {
 
   const [editId, setEditId] = useState<number | null>(null);
 
+  // Search and Sorting States
+  const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState("A-Z");
+
   // Add and Update Contact
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (name === "" || phone === "" || email === "") {
@@ -79,6 +83,23 @@ function App() {
     setContacts(updatedContacts);
   }
 
+  // Search Contacts
+  const filteredContacts = contacts.filter((contact) => {
+    return (
+      contact.name.toLowerCase().includes(search.toLowerCase()) ||
+      contact.phone.includes(search)
+    );
+  });
+
+  // Sort Contacts
+  const sortedContacts = [...filteredContacts].sort((a, b) => {
+    if (sortOrder === "A-Z") {
+      return a.name.localeCompare(b.name);
+    } else {
+      return b.name.localeCompare(a.name);
+    }
+  });
+
   return (
     <div className="container">
 
@@ -114,15 +135,44 @@ function App() {
 
       </form>
 
-      <h2>All Contacts ({contacts.length})</h2>
+      {/* Search and Sorting */}
+
+      <div className="search-section">
+
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Search by name or phone..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <select
+          className="sort-select"
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+        >
+          <option value="A-Z">Name A-Z</option>
+          <option value="Z-A">Name Z-A</option>
+        </select>
+
+      </div>
+
+      <h2>Total Contacts: {contacts.length}</h2>
 
       <div className="contact-list">
 
-        {contacts.length === 0 ? (
-          <p className="empty">No Contacts Added Yet!</p>
+        {sortedContacts.length === 0 ? (
+
+          <p className="empty">
+            {contacts.length === 0
+              ? "No Contacts Added Yet!"
+              : "No matching contacts"}
+          </p>
+
         ) : (
 
-          contacts.map((contact) => (
+          sortedContacts.map((contact) => (
 
             <div className="contact-card" key={contact.id}>
 
@@ -135,6 +185,7 @@ function App() {
               <div className="buttons">
 
                 <button
+                  type="button"
                   className="edit-btn"
                   onClick={() => handleEdit(contact)}
                 >
@@ -142,6 +193,7 @@ function App() {
                 </button>
 
                 <button
+                  type="button"
                   className="delete-btn"
                   onClick={() => handleDelete(contact.id)}
                 >
